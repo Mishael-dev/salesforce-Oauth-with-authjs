@@ -1,0 +1,5 @@
+create environement variables
+create the auth route
+create the auth.tsx file
+add handlers to route
+
