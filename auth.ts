@@ -1,6 +1,7 @@
 import nextAuth from "next-auth";
 import Salesforce from "next-auth/providers/salesforce";
 import { JWT } from "next-auth/jwt";
+import { SupabaseAdapter } from "@auth/supabase-adapter";
 
 interface SalesforceRefreshResponse {
   access_token: string;
@@ -51,7 +52,15 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
 }
 
 export const { auth, handlers, signIn, signOut } = nextAuth({
-  //   adapter: {},
+  session: {
+    strategy: "database",
+  },
+
+  adapter: SupabaseAdapter({
+    url: process.env.SUPABASE_URL!,
+    secret: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  }),
+
   providers: [Salesforce],
   callbacks: {
     authorized({ request, auth }) {
@@ -77,11 +86,8 @@ export const { auth, handlers, signIn, signOut } = nextAuth({
 
       return refreshAccessToken(token);
     },
+
     async session({ session, token }) {
-      session.accessToken = token.accessToken as string;
-      session.userId = token.userId as string;
-      session.instanceUrl = token.instanceUrl as string;
-      session.error = token.error as string | undefined;
       return session;
     },
   },
